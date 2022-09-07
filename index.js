@@ -1,43 +1,46 @@
 const express = require('express');
-const morgan = require("morgan");
-const { createProxyMiddleware } = require('http-proxy-middleware');
-const winston = require('winston');
+const bodyParser = require("body-parser");
+const axios = require("axios");
+const Logger = require("./logger");
 
-const logger = winston.createLogger({
-    level: 'info',
-    format: winston.format.json(),
-    transports: [
-        new winston.transports.Console(),
-        new winston.transports.File({ filename: 'logfile.log' })
-    ]
-});
+const SELF_PORT = 4000;
+const SELF_HOST = "127.0.0.1";
+const TARGET_API_URL = "http://127.0.0.1:8443";
 
 const app = express();
+app.use(bodyParser.raw());
+app.use(bodyParser.text());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
-// Configuration
-const PORT = 4000;
-const HOST = "127.0.0.1";
-const API_SERVICE_URL = "http://127.0.0.1:8443";
-
-// Logging
-app.use(morgan('dev'));
-
-// Info GET endpoint
-app.get('/info', (req, res, next) => {
-    res.send('This is a proxy service which proxies to JSONPlaceholder API.');
+const axiosInstance = axios.create({
+    baseURL: TARGET_API_URL,
 });
 
-// Proxy endpoints
-app.use('', createProxyMiddleware({
-    target: API_SERVICE_URL,
-    changeOrigin: true,
-    logProvider: ()=>logger
-/*    pathRewrite: {
-        [`^/json_placeholder`]: '',
-    },*/
-}));
+const logger = new Logger('access.log');
+let logId = 1;
 
-// Start Proxy
-app.listen(PORT, HOST, () => {
-    console.log(`Starting Proxy at ${HOST}:${PORT}`);
+app.use(async (req, res, next)=> {
+    const { method, url, headers, body } = req;
+    const logStr = Logger.create({ method, url: TARGET_API_URL+url, logId, body });
+    logger.write(logStr);
+    logId++;
+  try {
+      const response = await axiosInstance({
+          method,
+          url,
+          headers,
+          data: body
+      });
+      const {status, headers: resHeaders, data} = response;
+      res.set(resHeaders);
+      res.status(status).json(data);
+  }
+  catch (err) {
+      res.status(500).json(err);
+  }
+});
+
+app.listen(SELF_PORT, SELF_HOST, () => {
+    console.log(`Starting Proxy at ${SELF_HOST}:${SELF_PORT}`);
 });

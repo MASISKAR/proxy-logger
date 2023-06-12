@@ -17,14 +17,10 @@ const axiosInstance = axios.create({
     baseURL: TARGET_API_URL,
 });
 
-let logId = 1;
+const logger = new Logger('access.log');
 
 app.use(async (req, res)=> {
-  const logger = new Logger('access.log');
     const { method, url, headers, body } = req;
-    const logStr = Logger.create({ method, url: TARGET_API_URL+url, logId, body });
-    logger.write(logStr);
-    logId++;
   try {
       const response = await axiosInstance({
           method,
@@ -32,12 +28,14 @@ app.use(async (req, res)=> {
           headers,
           data: body
       });
+    logger.createLog({ method, url: TARGET_API_URL+url, body });
       const {status, headers: resHeaders, data} = response;
       res.set(resHeaders);
       res.status(status).json(data);
   }
-  catch (err) {
-      res.status(500).json(err);
+  catch (error) {
+    logger.createLog({ method, url: TARGET_API_URL+url, body, error });
+      res.status(500).json(error);
   }
 });
 

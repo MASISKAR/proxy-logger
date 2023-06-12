@@ -3,6 +3,12 @@ const path = require("path");
 
 class Logger{
     constructor(logFile){
+        const logFilePath = path.join(__dirname, logFile);
+        console.log('logFilePath', logFilePath); // fixme m
+        console.log('fs.existsSync(logFilePath)', fs.existsSync(logFilePath)); // fixme m
+        if (!fs.existsSync(logFilePath)) {
+            fs.writeFileSync(logFilePath, '');
+        }
     this.logger = fs.createWriteStream( path.join(__dirname, logFile), { flags: "a" });
     }
     write(msg){

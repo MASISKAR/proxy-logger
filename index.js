@@ -17,10 +17,10 @@ const axiosInstance = axios.create({
     baseURL: TARGET_API_URL,
 });
 
-const logger = new Logger('access.log');
 let logId = 1;
 
-app.use(async (req, res, next)=> {
+app.use(async (req, res)=> {
+  const logger = new Logger('access.log');
     const { method, url, headers, body } = req;
     const logStr = Logger.create({ method, url: TARGET_API_URL+url, logId, body });
     logger.write(logStr);

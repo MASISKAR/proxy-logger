@@ -1,0 +1,41 @@
+.logContainer{
+  padding: 20px 10px;
+  color: #000;
+  font-size: 16px;
+}
+
+.logContainer pre{
+line-height: 24px;
+}
+
+.clear-logs-btn {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0.3;
+}
+
+.clear-logs-btn:hover {
+  background-color: #c82333;
+  opacity: 1;
+}
+
+.clear-logs-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.5);
+}
+
+.successCode{
+  color: #28a745;
+}
+
+.errorCode{
+  color: #c82333;;
+}
